@@ -8,6 +8,7 @@ import click
 app = Flask(__name__)
 app.secret_key = "poij;lkrjaf;"
 app.jinja_env.undefined = StrictUndefined
+app.jinja_env.auto_reload = True
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 
@@ -31,7 +32,6 @@ def upload_file():
     # get the file name and extension to check if it is .csv
     file_name = uploaded_file.filename
     name, extension = os.path.splitext(file_name)
-    size = os.path.getsize(file_name)
 
     # Initialize a variable to set the file as invalid if there is any error
     invalid_file = False
@@ -45,22 +45,22 @@ def upload_file():
 
     # condition to check if file format is .csv and fiile is not empty, if so no further checks needed
     # if extension.lower() == ".csv" and os.path.exists(pathname) and os.path.isfile(pathname) and os.path.getsize(pathname) != 0:
-    if extension.lower() in app.config['UPLOAD_EXTENSIONS'] and size > 0:
+    if extension.lower() in app.config['UPLOAD_EXTENSIONS']:
         pass
     else:
         invalid_file = True
         response = {
             "status": "error", 
-            "message": "Invalid filename or filesize"
+            "message": "Invalid file format"
         }
-        return response
+        flash(response)
+        return redirect('/')
 
     # open csv file in read mode
     with open(file_name, 'r', encoding="utf-8") as csv_file:
         for row in csv_file.readlines():
             col_data = row.strip().split(',')
             row_count += 1
-            print(col_data)
     
             # check if file has 3 columns 
             if len(col_data) < 3:
@@ -83,13 +83,15 @@ def upload_file():
             "status": "success", 
             "message": "Valid CSV file"
         }
-        return response
+        flash(response)
+        return redirect('/')
     else:
         response = {
             "status": "error", 
             "message": ", ".join(error_log)
         }
-        return response
+        flash(response)
+        return redirect('/')
 
 @click.command()
 @click.option("--host", default="0.0.0.0", help="hostname for flask webapp")

@@ -2,16 +2,30 @@
 {% block title %}Welcome Page{% endblock %}
 
 {% block body %}
-  <h1>Welcome!</h1>
+  <div class="home-navbar">
+    <h1>Welcome!</h1>
+  </div>
+  
+  {% for msg in get_flashed_messages() %}
+      {% if msg['status'] == 'success' %}
+      <div class="flash-msg-success">
+        <p>{{ msg['message'] }}</p>
+      </div>
+      {% else %}
+      <div class="flash-msg-error">
+        <p> Error while validating CSV File: {{ msg['message'] }} </p>
+      </div>
+      {% endif %}
+  {% endfor %}
 
   <h2>click on "choose file" to upload the CSV file</h2>
   <form action="/validate_file" method="POST" enctype="multipart/form-data">
     <p>
         <input type="file" id="myFile" name="file">
+        <label for="myFile">Choose File</label>
     </p>
-
     <p>
-      <input type="submit" name="submit">
-    </p>
+      <input type="submit" id="mybtn" name="submit">
+    </p>  
   </form>
 {% endblock %}
